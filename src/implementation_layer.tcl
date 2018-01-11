@@ -703,8 +703,8 @@ foreach poolRow $pool__Pools {
   incr poolIdx
 }
 
-if { ![info exists poolIndexes($pool__DefaultPoolIndex)] 
-     && $pool__DefaultPoolIndex ne "" 
+if { ![info exists poolIndexes($pool__DefaultPoolIndex)]
+     && $pool__DefaultPoolIndex ne ""
      && $poolCount > 0 } {
   error "The default pool index specified was not present in the pool table"
 }
@@ -904,7 +904,13 @@ foreach l7p_actionGroup $l7p_actionGroups {
     switch [llength $l7p_action_targets] {
       3 {
         set l7p_rule_targettmp [join $l7p_action_targets " "]
-        set l7p_action_target_chunk [format "%s \{ %s \}" $l7p_actionRuleIdx $l7p_rule_targettmp]
+
+        if { $l7p_actionColumn(Parameter) != {} } {
+          set l7p_action_target_chunk [format "%s \{ %s %s \}" $l7p_actionRuleIdx $l7p_rule_targettmp $l7p_actionColumn(Parameter)]
+        } else {
+          set l7p_action_target_chunk [format "%s \{ %s \}" $l7p_actionRuleIdx $l7p_rule_targettmp]
+        }
+
         debug [list l7policy action $l7p_actionGroup $l7p_actionRuleIdx 3_elements] [format "chunk=%s" $l7p_action_target_chunk] 7
        }
       4 {
@@ -1055,7 +1061,7 @@ debug [list l7policy l7p_cmd] $l7p_cmd 7
 if { [llength $l7p_matchGroups] > 0 && [llength $l7p_actionGroups] > 0 } {
   if { $l7p_defer_create > 0 } {
     lappend bundler_deferred_cmds [format "catch { %s }" [create_escaped_tmsh [format "tmsh::create sys folder %s/Drafts" $app_path]]]
-    
+
     debug [list l7policy defer_create] $l7p_cmd 1
     set l7p_cmd_create [format "tmsh::create %s" $l7p_cmd]
     set l7p_cmd_modify [format "tmsh::modify %s" $l7p_cmd]
